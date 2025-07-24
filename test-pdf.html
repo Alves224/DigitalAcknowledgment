@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Test</title>
+</head>
+<body>
+    <h1>PDF Export Test</h1>
+    <button onclick="testPDF()">Test PDF Export</button>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        function testPDF() {
+            console.log('Testing PDF export...');
+            console.log('window.jsPDF:', window.jsPDF);
+            console.log('window.jspdf:', window.jspdf);
+            
+            try {
+                let jsPDF;
+                if (window.jsPDF) {
+                    jsPDF = window.jsPDF.jsPDF || window.jsPDF;
+                } else if (window.jspdf) {
+                    jsPDF = window.jspdf.jsPDF || window.jspdf;
+                }
+                
+                if (!jsPDF) {
+                    alert('jsPDF not found!');
+                    return;
+                }
+                
+                const doc = new jsPDF();
+                doc.text('Hello world!', 10, 10);
+                doc.save('test.pdf');
+                alert('PDF created successfully!');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Test when page loads
+        window.onload = function() {
+            console.log('Page loaded. jsPDF available:', !!(window.jsPDF || window.jspdf));
+        };
+    </script>
+</body>
+</html>

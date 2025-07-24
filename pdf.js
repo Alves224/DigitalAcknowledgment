@@ -2,15 +2,29 @@
 class PDFExporter {
     static exportSubmission(submission) {
         try {
-            // Check if jsPDF is available
-            if (typeof window.jsPDF === 'undefined') {
+            console.log('Starting PDF export for submission:', submission);
+            
+            // Check if jsPDF is available with multiple possible locations
+            let jsPDF;
+            if (window.jsPDF) {
+                jsPDF = window.jsPDF.jsPDF || window.jsPDF;
+            } else if (window.jspdf) {
+                jsPDF = window.jspdf.jsPDF || window.jspdf;
+            }
+            
+            if (!jsPDF) {
+                console.error('jsPDF library not found. Available:', {
+                    jsPDF: typeof window.jsPDF,
+                    jspdf: typeof window.jspdf
+                });
                 if (window.UIManager && typeof window.UIManager.showToast === 'function') {
-                    window.UIManager.showToast('PDF Library Error', 'PDF generation library is not available.', 'error');
+                    window.UIManager.showToast('PDF Library Error', 'PDF generation library is not available. Please refresh the page.', 'error');
                 }
                 return;
             }
+            
+            console.log('jsPDF found, creating document...');
 
-            const { jsPDF } = window.jsPDF;
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
@@ -163,7 +177,20 @@ class PDFExporter {
                 return;
             }
 
-            const { jsPDF } = window.jsPDF;
+            // Check if jsPDF is available with multiple possible locations
+            let jsPDF;
+            if (window.jsPDF) {
+                jsPDF = window.jsPDF.jsPDF || window.jsPDF;
+            } else if (window.jspdf) {
+                jsPDF = window.jspdf.jsPDF || window.jspdf;
+            }
+            
+            if (!jsPDF) {
+                if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                    window.UIManager.showToast('PDF Library Error', 'PDF generation library is not available.', 'error');
+                }
+                return;
+            }
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
             const pageHeight = doc.internal.pageSize.height;
@@ -251,7 +278,7 @@ class PDFExporter {
 
     // Method to check if PDF generation is supported
     static isSupported() {
-        return typeof window.jsPDF !== 'undefined';
+        return !!(window.jsPDF || window.jspdf);
     }
 }
 
