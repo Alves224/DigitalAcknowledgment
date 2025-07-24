@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YSOD Digital Acknowledgment Form Hub</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" href="favicon.ico" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- Background Design Elements -->
+      <div class="background-elements">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+      </div>
+
+      <div class="container">
+        <!-- Header with Theme Toggle -->
+        <header class="header">
+          <div class="header-content">
+            <h1 class="title">YSOD Digital Acknowledgment Form Hub</h1>
+            <p class="subtitle">
+              Select the type of acknowledgment you need to complete
+            </p>
+          </div>
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Toggle theme"
+          >
+            <svg
+              class="sun-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <path
+                d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+              />
+            </svg>
+            <svg
+              class="moon-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+        </header>
+
+        <!-- Add New Type Button -->
+        <div class="actions">
+          <button id="add-type-btn" class="btn btn-primary">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add New Acknowledgment Type
+          </button>
+        </div>
+
+        <!-- Acknowledgment Types Grid -->
+        <div id="acknowledgment-grid" class="acknowledgment-grid">
+          <!-- Cards will be dynamically inserted here -->
+        </div>
+
+        <!-- Recent Submissions -->
+        <div
+          id="submissions-section"
+          class="submissions-section"
+          style="display: none"
+        >
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 12l2 2 4-4" />
+                  <circle cx="12" cy="12" r="10" />
+                </svg>
+                Your Submissions
+              </h2>
+            </div>
+            <div class="card-content">
+              <!-- Search Field -->
+              <div class="search-container">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="Search by employee name to view your submissions..."
+                  class="search-input"
+                />
+              </div>
+
+              <!-- Submissions List -->
+              <div id="submissions-list" class="submissions-list">
+                <!-- Submissions will be dynamically inserted here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acknowledgment Modal -->
+    <div id="acknowledgment-modal" class="modal">
+      <div class="modal-content">
+        <div id="modal-body" class="modal-body">
+          <!-- Modal content will be dynamically inserted -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Type Modal -->
+    <div id="add-type-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New Acknowledgment Type</h2>
+          <button class="close-btn" data-modal="add-type-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="add-type-form">
+            <div class="form-group">
+              <label for="type-title">Title *</label>
+              <input
+                type="text"
+                id="type-title"
+                placeholder="Enter acknowledgment title"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="type-description">Description *</label>
+              <input
+                type="text"
+                id="type-description"
+                placeholder="Enter brief description"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="type-content">Content (Optional)</label>
+              <textarea
+                id="type-content"
+                placeholder="Enter detailed acknowledgment content"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Numbered Sections/Rules (Optional)</label>
+              <div id="sections-container">
+                <div class="section-item">
+                  <span class="section-number">1.</span>
+                  <textarea
+                    class="section-input"
+                    placeholder="Enter section 1 content"
+                    rows="2"
+                  ></textarea>
+                  <button
+                    type="button"
+                    class="btn-remove"
+                    style="display: none"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                id="add-section-btn"
+                class="btn btn-outline btn-sm"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add Section
+              </button>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Add Type</button>
+              <button
+                type="button"
+                class="btn btn-outline"
+                data-modal="add-type-modal"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submission View Modal -->
+    <div id="submission-modal" class="modal">
+      <div class="modal-content">
+        <div id="submission-modal-body" class="modal-body">
+          <!-- Submission content will be dynamically inserted -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/pdf.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/forms.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
