@@ -160,8 +160,13 @@ class PDFExporter {
 
         } catch (error) {
             console.error('Error generating PDF:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                submission: submission
+            });
             if (window.UIManager && typeof window.UIManager.showToast === 'function') {
-                window.UIManager.showToast('Export Error', 'Failed to export PDF. Please try again.', 'error');
+                window.UIManager.showToast('Export Error', `Failed to export PDF: ${error.message}`, 'error');
             }
         }
     }

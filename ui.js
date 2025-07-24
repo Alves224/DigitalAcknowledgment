@@ -468,7 +468,16 @@ class UIManager {
 
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
-                PDFExporter.exportSubmission(submission);
+                console.log('Export button clicked, trying simple export first...');
+                // Try simple export first
+                if (window.exportSubmissionSimple && window.exportSubmissionSimple(submission)) {
+                    if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                        window.UIManager.showToast('PDF Exported', 'Acknowledgment exported successfully!', 'success');
+                    }
+                } else {
+                    // Fallback to original export
+                    PDFExporter.exportSubmission(submission);
+                }
             });
         }
 
