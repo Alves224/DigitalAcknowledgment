@@ -1,208 +1,685 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Test - YSOD Digital Acknowledgment</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharePoint Integration Testing</title>
+    <link rel="stylesheet" href="css/styles.css">
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 800px;
-        margin: 50px auto;
-        padding: 20px;
-        line-height: 1.6;
-      }
-      .test-item {
-        background: #f5f5f5;
-        padding: 15px;
-        margin: 15px 0;
-        border-radius: 8px;
-        border-left: 4px solid #3b82f6;
-      }
-      .success {
-        border-left-color: #10b981;
-        background: #f0fdf4;
-      }
-      .error {
-        border-left-color: #ef4444;
-        background: #fef2f2;
-      }
-      .btn {
-        display: inline-block;
-        padding: 10px 20px;
-        background: #3b82f6;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        margin: 10px 5px;
-      }
-      .btn:hover {
-        background: #2563eb;
-      }
+        .test-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .test-section h3 {
+            margin-top: 0;
+            color: #1f2937;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.5rem;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .test-card {
+            padding: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #f9fafb;
+        }
+
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .test-button:hover {
+            background: #2563eb;
+        }
+
+        .test-button.success {
+            background: #10b981;
+        }
+
+        .test-button.error {
+            background: #ef4444;
+        }
+
+        .test-button.warning {
+            background: #f59e0b;
+        }
+
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .test-result.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .test-result.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .test-result.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.mock {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .test-log {
+            height: 200px;
+            overflow-y: auto;
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        .user-switcher {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .user-switcher select {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+        }
     </style>
-  </head>
-  <body>
-    <h1>🚀 YSOD Digital Acknowledgment System</h1>
-    <h2>Standalone Version Test Page</h2>
+</head>
+<body>
+    <div class="test-container">
+        <header style="text-align: center; margin-bottom: 2rem;">
+            <h1>🧪 SharePoint Integration Testing</h1>
+            <p>Test your SharePoint integration with both mock and real services</p>
+            <div id="connection-status" class="status-badge mock">Initializing...</div>
+        </header>
 
-    <div class="test-item success">
-      <h3>✅ Conversion Complete!</h3>
-      <p>
-        The React-based YSOD Digital Acknowledgment System has been successfully
-        converted to a standalone HTML/CSS/JavaScript application.
-      </p>
+        <!-- Environment Information -->
+        <div class="test-section">
+            <h3>📊 Environment Information</h3>
+            <div id="environment-info" class="test-result info">Loading...</div>
+            <div class="test-controls">
+                <button class="test-button" onclick="refreshEnvironmentInfo()">Refresh Info</button>
+                <button class="test-button" onclick="testConnection()">Test Connection</button>
+                <button class="test-button warning" onclick="switchToMock()">Force Mock Mode</button>
+                <button class="test-button success" onclick="switchToReal()">Try Real SharePoint</button>
+            </div>
+        </div>
+
+        <!-- User Testing -->
+        <div class="test-section">
+            <h3>👤 User Authentication & Role Testing</h3>
+            <div class="user-switcher">
+                <label>Test as user:</label>
+                <select id="test-user-selector">
+                    <option value="employee1@company.com">Mike Employee (Employee)</option>
+                    <option value="admin@company.com">John Admin (Admin)</option>
+                    <option value="manager@company.com">Sarah Manager (Admin)</option>
+                    <option value="employee2@company.com">Lisa Worker (Employee)</option>
+                    <option value="test@company.com">Test User (Employee)</option>
+                </select>
+                <button class="test-button" onclick="switchUser()">Switch User</button>
+            </div>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h4>Current User</h4>
+                    <button class="test-button" onclick="testGetCurrentUser()">Get Current User</button>
+                    <div id="current-user-result" class="test-result"></div>
+                </div>
+                <div class="test-card">
+                    <h4>Admin Check</h4>
+                    <button class="test-button" onclick="testIsUserAdmin()">Check Admin Status</button>
+                    <div id="admin-check-result" class="test-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Operations Testing -->
+        <div class="test-section">
+            <h3>📋 SharePoint List Operations</h3>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h4>Get Admin Staff List</h4>
+                    <button class="test-button" onclick="testGetAdminList()">Get Admin Staff</button>
+                    <div id="admin-list-result" class="test-result"></div>
+                </div>
+                <div class="test-card">
+                    <h4>Create New List</h4>
+                    <input type="text" id="new-list-name" placeholder="Enter list name" style="width: 100%; margin-bottom: 0.5rem;">
+                    <button class="test-button" onclick="testCreateList()">Create List</button>
+                    <div id="create-list-result" class="test-result"></div>
+                </div>
+                <div class="test-card">
+                    <h4>Add List Item</h4>
+                    <input type="text" id="list-name-for-item" placeholder="List name" style="width: 100%; margin-bottom: 0.5rem;">
+                    <textarea id="item-data" placeholder='{"Title": "Test Item"}' style="width: 100%; margin-bottom: 0.5rem;" rows="3"></textarea>
+                    <button class="test-button" onclick="testAddListItem()">Add Item</button>
+                    <div id="add-item-result" class="test-result"></div>
+                </div>
+                <div class="test-card">
+                    <h4>Search Lists</h4>
+                    <input type="text" id="search-query" placeholder="Search term" style="width: 100%; margin-bottom: 0.5rem;">
+                    <button class="test-button" onclick="testSearchLists()">Search Lists</button>
+                    <div id="search-result" class="test-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acknowledgment Integration Testing -->
+        <div class="test-section">
+            <h3>📝 Acknowledgment Integration Testing</h3>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h4>Submit Test Acknowledgment</h4>
+                    <select id="ack-type-selector" style="width: 100%; margin-bottom: 0.5rem;">
+                        <option value="safety">Safety Acknowledgment</option>
+                        <option value="training">Training Acknowledgment</option>
+                        <option value="custom">Custom Acknowledgment</option>
+                    </select>
+                    <button class="test-button" onclick="testSubmitAcknowledgment()">Submit Test Acknowledgment</button>
+                    <div id="submit-ack-result" class="test-result"></div>
+                </div>
+                <div class="test-card">
+                    <h4>Get Acknowledgments</h4>
+                    <input type="text" id="ack-list-name" placeholder="Acknowledgment list name" style="width: 100%; margin-bottom: 0.5rem;">
+                    <button class="test-button" onclick="testGetAcknowledgments()">Get Acknowledgments</button>
+                    <div id="get-ack-result" class="test-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automated Test Suite -->
+        <div class="test-section">
+            <h3>🤖 Automated Test Suite</h3>
+            <div class="test-controls">
+                <button class="test-button success" onclick="runAllTests()">Run All Tests</button>
+                <button class="test-button" onclick="runUserTests()">Run User Tests</button>
+                <button class="test-button" onclick="runListTests()">Run List Tests</button>
+                <button class="test-button" onclick="runAcknowledgmentTests()">Run Acknowledgment Tests</button>
+                <button class="test-button error" onclick="clearTestResults()">Clear Results</button>
+            </div>
+            <div id="automated-test-results" class="test-result info">Click "Run All Tests" to start automated testing...</div>
+        </div>
+
+        <!-- Test Console Log -->
+        <div class="test-section">
+            <h3>🖥️ Test Console</h3>
+            <div class="test-controls">
+                <button class="test-button" onclick="clearTestLog()">Clear Log</button>
+                <button class="test-button" onclick="exportTestLog()">Export Log</button>
+            </div>
+            <div id="test-log" class="test-log">Test console initialized...\n</div>
+        </div>
     </div>
 
-    <div class="test-item">
-      <h3>📁 File Structure</h3>
-      <ul>
-        <li><strong>index.html</strong> - Main application file</li>
-        <li>
-          <strong>css/styles.css</strong> - Complete styling and design system
-        </li>
-        <li><strong>js/main.js</strong> - Application initialization</li>
-        <li>
-          <strong>js/data.js</strong> - Data management and acknowledgment types
-        </li>
-        <li><strong>js/storage.js</strong> - LocalStorage operations</li>
-        <li><strong>js/theme.js</strong> - Dark/Light theme switching</li>
-        <li><strong>js/ui.js</strong> - UI components and modal handling</li>
-        <li><strong>js/forms.js</strong> - Form management and validation</li>
-        <li><strong>js/pdf.js</strong> - PDF export functionality</li>
-      </ul>
-    </div>
-
-    <div class="test-item">
-      <h3>✨ Features Preserved</h3>
-      <ul>
-        <li>✅ All acknowledgment types display</li>
-        <li>✅ Modal-based acknowledgment forms</li>
-        <li>✅ Arabic/English bilingual support</li>
-        <li>✅ Form validation and submission</li>
-        <li>✅ Local data storage</li>
-        <li>✅ Search functionality</li>
-        <li>✅ Add/delete custom acknowledgment types</li>
-        <li>✅ PDF export capability</li>
-        <li>✅ Dark/Light theme switching</li>
-        <li>✅ Responsive design</li>
-        <li>✅ Keyboard shortcuts</li>
-        <li>✅ Toast notifications</li>
-      </ul>
-    </div>
-
-    <div class="test-item">
-      <h3>🔧 Browser Requirements</h3>
-      <ul>
-        <li>Modern browser with ES6+ support</li>
-        <li>LocalStorage enabled</li>
-        <li>JavaScript enabled</li>
-        <li>No server or build tools required</li>
-      </ul>
-    </div>
-
-    <div class="test-item">
-      <h3>🚀 Getting Started</h3>
-      <p>
-        Simply open <code>index.html</code> in any modern web browser. No
-        installation, build process, or server required!
-      </p>
-
-      <a href="index.html" class="btn">🎯 Launch Application</a>
-      <a href="README.md" class="btn">📖 Read Documentation</a>
-    </div>
-
-    <div class="test-item">
-      <h3>🧪 Quick Tests</h3>
-      <p>Once you open the application, try these quick tests:</p>
-      <ol>
-        <li>Click on "Remote Area Working Acknowledgement" card</li>
-        <li>Fill in employee name and check the acknowledgment box</li>
-        <li>Submit the form</li>
-        <li>Search for the submission by employee name</li>
-        <li>Click on the submission to view details and export PDF</li>
-        <li>Try adding a new acknowledgment type</li>
-        <li>Toggle between light and dark themes</li>
-      </ol>
-    </div>
-
-    <div class="test-item">
-      <h3>🐛 Troubleshooting</h3>
-      <p>If you encounter issues:</p>
-      <ul>
-        <li><strong>Check browser console</strong> (F12) for error messages</li>
-        <li><strong>Refresh the page</strong> if loading seems stuck</li>
-        <li><strong>Try a different browser</strong> if problems persist</li>
-        <li>
-          <strong>Debug command:</strong> Type <code>debugApp()</code> in
-          console for diagnostics
-        </li>
-      </ul>
-    </div>
-
-    <div class="test-item">
-      <h3>💡 Tips</h3>
-      <ul>
-        <li>Use <kbd>Ctrl/Cmd + D</kbd> to toggle theme</li>
-        <li>Use <kbd>Ctrl/Cmd + K</kbd> to focus search</li>
-        <li>Use <kbd>Ctrl/Cmd + N</kbd> to add new type</li>
-        <li>Use <kbd>Esc</kbd> to close modals</li>
-        <li>All data is saved locally in your browser</li>
-      </ul>
-    </div>
-
+    <!-- Include all required scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/sharepoint-mock.js"></script>
+    <script src="js/sharepoint-service.js"></script>
+    
     <script>
-      // Basic compatibility check
-      const tests = [
-        {
-          name: "LocalStorage",
-          test: () => typeof Storage !== "undefined",
-          required: true,
-        },
-        {
-          name: "ES6 Support",
-          test: () => {
-            try {
-              eval("const test = () => true; test();");
-              return true;
-            } catch (e) {
-              return false;
+        // Test Framework
+        class TestFramework {
+            constructor() {
+                this.results = [];
+                this.logElement = document.getElementById('test-log');
+                this.init();
             }
-          },
-          required: true,
-        },
-        {
-          name: "CSS Grid",
-          test: () => CSS.supports("display", "grid"),
-          required: false,
-        },
-        {
-          name: "CSS Variables",
-          test: () => CSS.supports("--custom", "property"),
-          required: true,
-        },
-      ];
 
-      const results = tests.map((test) => ({ ...test, passed: test.test() }));
-      const failed = results.filter((r) => !r.passed && r.required);
+            async init() {
+                this.log('🚀 Test Framework initialized');
+                await this.refreshEnvironmentInfo();
+            }
 
-      console.log("Browser Compatibility Check:");
-      results.forEach((r) =>
-        console.log(
-          `${r.passed ? "✅" : "❌"} ${r.name}: ${
-            r.passed ? "SUPPORTED" : "NOT SUPPORTED"
-          }`
-        )
-      );
+            log(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                const logMessage = `[${timestamp}] ${message}\n`;
+                this.logElement.textContent += logMessage;
+                this.logElement.scrollTop = this.logElement.scrollHeight;
+                console.log(message);
+            }
 
-      if (failed.length === 0) {
-        console.log(
-          "🎉 Browser is compatible! Application should work correctly."
-        );
-      } else {
-        console.log(
-          "⚠️ Compatibility issues detected. Application may not work properly."
-        );
-      }
+            async refreshEnvironmentInfo() {
+                try {
+                    await window.SharePointService.init();
+                    const info = window.SharePointService.getEnvironmentInfo();
+                    const user = await window.SharePointService.getCurrentUser();
+                    const isAdmin = await window.SharePointService.isUserAdmin();
+
+                    const infoText = `Environment: ${info.useMockService ? 'Mock Service' : 'Real SharePoint'}
+Base URL: ${info.baseUrl}
+SharePoint Online: ${info.isOnline}
+Has SP Context: ${info.hasSharePointContext}
+Current User: ${user.Title} (${user.Email})
+Is Admin: ${isAdmin}
+Browser: ${navigator.userAgent}`;
+
+                    document.getElementById('environment-info').textContent = infoText;
+                    document.getElementById('connection-status').textContent = info.useMockService ? 'Mock Mode' : 'SharePoint Connected';
+                    document.getElementById('connection-status').className = `status-badge ${info.useMockService ? 'mock' : 'connected'}`;
+                    
+                    this.log(`📊 Environment refreshed - Mode: ${info.useMockService ? 'Mock' : 'Real'}`);
+                } catch (error) {
+                    this.showError('environment-info', error);
+                    this.log(`❌ Environment refresh failed: ${error.message}`);
+                }
+            }
+
+            async testConnection() {
+                try {
+                    this.log('🔌 Testing connection...');
+                    const result = await window.SharePointService.testConnection();
+                    if (result.success) {
+                        this.showSuccess('environment-info', `Connection successful!\nUser: ${result.user.Title}\nAdmin: ${result.isAdmin}`);
+                        this.log('✅ Connection test passed');
+                    } else {
+                        this.showError('environment-info', `Connection failed: ${result.error}`);
+                        this.log(`❌ Connection test failed: ${result.error}`);
+                    }
+                } catch (error) {
+                    this.showError('environment-info', error);
+                    this.log(`❌ Connection test error: ${error.message}`);
+                }
+            }
+
+            async switchUser() {
+                const selectedUser = document.getElementById('test-user-selector').value;
+                if (window.SharePointMock) {
+                    window.SharePointMock.simulateUserLogin(selectedUser);
+                    this.log(`👤 Switched to user: ${selectedUser}`);
+                    await this.refreshEnvironmentInfo();
+                } else {
+                    this.log('⚠️ User switching only available in mock mode');
+                }
+            }
+
+            async testGetCurrentUser() {
+                try {
+                    this.log('👤 Getting current user...');
+                    const user = await window.SharePointService.getCurrentUser();
+                    this.showSuccess('current-user-result', JSON.stringify(user, null, 2));
+                    this.log(`✅ Got current user: ${user.Title}`);
+                } catch (error) {
+                    this.showError('current-user-result', error);
+                    this.log(`❌ Get current user failed: ${error.message}`);
+                }
+            }
+
+            async testIsUserAdmin() {
+                try {
+                    this.log('👑 Checking admin status...');
+                    const isAdmin = await window.SharePointService.isUserAdmin();
+                    this.showSuccess('admin-check-result', `User is ${isAdmin ? 'an ADMIN' : 'an EMPLOYEE'}`);
+                    this.log(`✅ Admin check: ${isAdmin ? 'Admin' : 'Employee'}`);
+                } catch (error) {
+                    this.showError('admin-check-result', error);
+                    this.log(`❌ Admin check failed: ${error.message}`);
+                }
+            }
+
+            async testGetAdminList() {
+                try {
+                    this.log('📋 Getting admin staff list...');
+                    const adminList = await window.SharePointService.getListItems('AdminStaff');
+                    this.showSuccess('admin-list-result', JSON.stringify(adminList, null, 2));
+                    this.log(`✅ Got admin list with ${adminList.length} items`);
+                } catch (error) {
+                    this.showError('admin-list-result', error);
+                    this.log(`❌ Get admin list failed: ${error.message}`);
+                }
+            }
+
+            async testCreateList() {
+                const listName = document.getElementById('new-list-name').value;
+                if (!listName) {
+                    this.showError('create-list-result', 'Please enter a list name');
+                    return;
+                }
+
+                try {
+                    this.log(`📝 Creating list: ${listName}...`);
+                    const result = await window.SharePointService.createList(listName, `Test list created at ${new Date()}`);
+                    this.showSuccess('create-list-result', JSON.stringify(result, null, 2));
+                    this.log(`✅ Created list: ${listName}`);
+                } catch (error) {
+                    this.showError('create-list-result', error);
+                    this.log(`❌ Create list failed: ${error.message}`);
+                }
+            }
+
+            async testAddListItem() {
+                const listName = document.getElementById('list-name-for-item').value;
+                const itemDataStr = document.getElementById('item-data').value;
+
+                if (!listName || !itemDataStr) {
+                    this.showError('add-item-result', 'Please enter both list name and item data');
+                    return;
+                }
+
+                try {
+                    const itemData = JSON.parse(itemDataStr);
+                    this.log(`➕ Adding item to ${listName}...`);
+                    const result = await window.SharePointService.addListItem(listName, itemData);
+                    this.showSuccess('add-item-result', JSON.stringify(result, null, 2));
+                    this.log(`✅ Added item to ${listName}`);
+                } catch (error) {
+                    this.showError('add-item-result', error);
+                    this.log(`❌ Add item failed: ${error.message}`);
+                }
+            }
+
+            async testSearchLists() {
+                const query = document.getElementById('search-query').value;
+                if (!query) {
+                    this.showError('search-result', 'Please enter a search term');
+                    return;
+                }
+
+                try {
+                    this.log(`🔍 Searching lists for: ${query}...`);
+                    const results = await window.SharePointService.searchLists(query);
+                    this.showSuccess('search-result', JSON.stringify(results, null, 2));
+                    this.log(`✅ Found ${results.length} lists matching "${query}"`);
+                } catch (error) {
+                    this.showError('search-result', error);
+                    this.log(`❌ Search failed: ${error.message}`);
+                }
+            }
+
+            async testSubmitAcknowledgment() {
+                const ackType = document.getElementById('ack-type-selector').value;
+                const listName = `${ackType}Acknowledgments`;
+
+                try {
+                    this.log(`📝 Submitting test acknowledgment to ${listName}...`);
+                    const user = await window.SharePointService.getCurrentUser();
+                    
+                    const acknowledgment = {
+                        Title: `Test Acknowledgment - ${ackType}`,
+                        EmployeeName: user.Title,
+                        EmployeeEmail: user.Email,
+                        AcknowledgmentType: ackType,
+                        Acknowledged: true,
+                        SubmissionDate: new Date().toISOString(),
+                        RequestNumber: `TEST-${Date.now()}`
+                    };
+
+                    const result = await window.SharePointService.addListItem(listName, acknowledgment);
+                    this.showSuccess('submit-ack-result', JSON.stringify(result, null, 2));
+                    this.log(`✅ Submitted acknowledgment to ${listName}`);
+                } catch (error) {
+                    this.showError('submit-ack-result', error);
+                    this.log(`❌ Submit acknowledgment failed: ${error.message}`);
+                }
+            }
+
+            async testGetAcknowledgments() {
+                const listName = document.getElementById('ack-list-name').value;
+                if (!listName) {
+                    this.showError('get-ack-result', 'Please enter an acknowledgment list name');
+                    return;
+                }
+
+                try {
+                    this.log(`📋 Getting acknowledgments from ${listName}...`);
+                    const acknowledgments = await window.SharePointService.getListItems(listName);
+                    this.showSuccess('get-ack-result', JSON.stringify(acknowledgments, null, 2));
+                    this.log(`✅ Got ${acknowledgments.length} acknowledgments from ${listName}`);
+                } catch (error) {
+                    this.showError('get-ack-result', error);
+                    this.log(`❌ Get acknowledgments failed: ${error.message}`);
+                }
+            }
+
+            async runAllTests() {
+                this.log('🚀 Running all automated tests...');
+                await this.runUserTests();
+                await this.runListTests();
+                await this.runAcknowledgmentTests();
+                this.log('✅ All automated tests completed!');
+            }
+
+            async runUserTests() {
+                this.log('👤 Running user tests...');
+                try {
+                    await this.testGetCurrentUser();
+                    await this.testIsUserAdmin();
+                    this.showSuccess('automated-test-results', 'User tests completed successfully');
+                } catch (error) {
+                    this.showError('automated-test-results', `User tests failed: ${error.message}`);
+                }
+            }
+
+            async runListTests() {
+                this.log('📋 Running list tests...');
+                try {
+                    await this.testGetAdminList();
+                    this.showSuccess('automated-test-results', 'List tests completed successfully');
+                } catch (error) {
+                    this.showError('automated-test-results', `List tests failed: ${error.message}`);
+                }
+            }
+
+            async runAcknowledgmentTests() {
+                this.log('📝 Running acknowledgment tests...');
+                try {
+                    // Test each acknowledgment type
+                    const types = ['safety', 'training'];
+                    for (const type of types) {
+                        document.getElementById('ack-type-selector').value = type;
+                        await this.testSubmitAcknowledgment();
+                        await new Promise(resolve => setTimeout(resolve, 500)); // Small delay
+                    }
+                    this.showSuccess('automated-test-results', 'Acknowledgment tests completed successfully');
+                } catch (error) {
+                    this.showError('automated-test-results', `Acknowledgment tests failed: ${error.message}`);
+                }
+            }
+
+            clearTestResults() {
+                const resultElements = document.querySelectorAll('.test-result');
+                resultElements.forEach(el => {
+                    el.textContent = '';
+                    el.className = 'test-result';
+                });
+                this.log('🧹 Cleared all test results');
+            }
+
+            clearTestLog() {
+                this.logElement.textContent = 'Test console cleared...\n';
+            }
+
+            exportTestLog() {
+                const logContent = this.logElement.textContent;
+                const blob = new Blob([logContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sharepoint-test-log-${new Date().toISOString().slice(0, 10)}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.log('💾 Test log exported');
+            }
+
+            showSuccess(elementId, message) {
+                const element = document.getElementById(elementId);
+                element.textContent = message;
+                element.className = 'test-result success';
+            }
+
+            showError(elementId, error) {
+                const element = document.getElementById(elementId);
+                element.textContent = error.message || error;
+                element.className = 'test-result error';
+            }
+
+            showInfo(elementId, message) {
+                const element = document.getElementById(elementId);
+                element.textContent = message;
+                element.className = 'test-result info';
+            }
+        }
+
+        // Global test functions
+        let testFramework;
+
+        function refreshEnvironmentInfo() {
+            testFramework.refreshEnvironmentInfo();
+        }
+
+        function testConnection() {
+            testFramework.testConnection();
+        }
+
+        function switchToMock() {
+            window.SharePointService.useMockService = true;
+            window.SharePointService.mockService = window.SharePointMock;
+            testFramework.log('🧪 Switched to mock mode');
+            testFramework.refreshEnvironmentInfo();
+        }
+
+        function switchToReal() {
+            window.SharePointService.useMockService = false;
+            testFramework.log('🌐 Attempting to switch to real SharePoint...');
+            testFramework.refreshEnvironmentInfo();
+        }
+
+        function switchUser() {
+            testFramework.switchUser();
+        }
+
+        function testGetCurrentUser() {
+            testFramework.testGetCurrentUser();
+        }
+
+        function testIsUserAdmin() {
+            testFramework.testIsUserAdmin();
+        }
+
+        function testGetAdminList() {
+            testFramework.testGetAdminList();
+        }
+
+        function testCreateList() {
+            testFramework.testCreateList();
+        }
+
+        function testAddListItem() {
+            testFramework.testAddListItem();
+        }
+
+        function testSearchLists() {
+            testFramework.testSearchLists();
+        }
+
+        function testSubmitAcknowledgment() {
+            testFramework.testSubmitAcknowledgment();
+        }
+
+        function testGetAcknowledgments() {
+            testFramework.testGetAcknowledgments();
+        }
+
+        function runAllTests() {
+            testFramework.runAllTests();
+        }
+
+        function runUserTests() {
+            testFramework.runUserTests();
+        }
+
+        function runListTests() {
+            testFramework.runListTests();
+        }
+
+        function runAcknowledgmentTests() {
+            testFramework.runAcknowledgmentTests();
+        }
+
+        function clearTestResults() {
+            testFramework.clearTestResults();
+        }
+
+        function clearTestLog() {
+            testFramework.clearTestLog();
+        }
+
+        function exportTestLog() {
+            testFramework.exportTestLog();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            testFramework = new TestFramework();
+        });
     </script>
-  </body>
+</body>
 </html>
