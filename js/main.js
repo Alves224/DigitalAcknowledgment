@@ -19,9 +19,11 @@ class App {
     async initializeApp() {
         try {
             this.checkDependencies();
+            await this.initializeSharePoint();
             await this.initializeComponents();
             this.setupErrorHandling();
             this.setupKeyboardShortcuts();
+            this.setupAdminPanel();
 
             this.initialized = true;
             this.showWelcomeMessage();
@@ -50,6 +52,257 @@ class App {
         // Setup jsPDF if available under alternative name
         if (!PDFExporter.isSupported() && typeof window.jspdf !== 'undefined') {
             window.jsPDF = window.jspdf.jsPDF;
+        }
+    }
+
+    async initializeSharePoint() {
+        try {
+            if (window.SharePointService) {
+                console.log('Initializing SharePoint service...');
+                this.updateSharePointStatus('connecting', 'Connecting to SharePoint...');
+                
+                const initialized = await window.SharePointService.initialize();
+                
+                if (initialized) {
+                    console.log('SharePoint service initialized successfully');
+                    this.updateSharePointStatus('connected', 'SharePoint Connected');
+                    // Attempt to sync existing localStorage data to SharePoint
+                    await Storage.syncToSharePoint();
+                } else {
+                    console.log('SharePoint service initialization failed, using fallback');
+                    this.updateSharePointStatus('disconnected', 'SharePoint Unavailable');
+                }
+            } else {
+                console.log('SharePoint service not available');
+                this.updateSharePointStatus('disconnected', 'SharePoint Not Available');
+            }
+        } catch (error) {
+            console.error('Error initializing SharePoint:', error);
+            this.updateSharePointStatus('disconnected', 'SharePoint Connection Failed');
+            // Continue with localStorage fallback
+        }
+    }
+
+    updateSharePointStatus(status, message) {
+        const statusElement = document.getElementById('sharepoint-status');
+        const statusText = document.getElementById('sharepoint-status-text');
+        
+        if (statusElement && statusText) {
+            statusElement.style.display = 'inline-flex';
+            statusElement.className = `sharepoint-status ${status}`;
+            statusText.textContent = message;
+        }
+    }
+
+    setupAdminPanel() {
+        // Add admin panel if user is admin
+        if (Storage.isCurrentUserAdmin()) {
+            this.createAdminPanel();
+        }
+    }
+
+    createAdminPanel() {
+        const container = document.querySelector('.container');
+        if (!container) return;
+
+        const adminPanel = document.createElement('div');
+        adminPanel.id = 'admin-panel';
+        adminPanel.className = 'card admin-panel';
+        adminPanel.style.marginTop = '2rem';
+        adminPanel.innerHTML = `
+            <div class="card-header">
+                <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1l3 6h6l-3 9-6-3-6 3-3-9h6z"/>
+                    </svg>
+                    Admin Panel
+                </h2>
+            </div>
+            <div class="card-content">
+                <div class="admin-section">
+                    <h3>SharePoint List Selection</h3>
+                    <p>Choose which SharePoint list to use for storing acknowledgment submissions:</p>
+                    <div class="list-selection">
+                        <select id="submission-list-select" class="form-control">
+                            <option value="">Loading available lists...</option>
+                        </select>
+                        <button id="create-new-list-btn" class="btn btn-outline btn-sm">Create New List</button>
+                    </div>
+                </div>
+                
+                <div class="admin-section">
+                    <h3>Admin Management</h3>
+                    <p>Manage users who can add/delete acknowledgment types:</p>
+                    <div class="admin-actions">
+                        <input type="email" id="admin-email-input" placeholder="Enter user email" class="form-control">
+                        <button id="add-admin-btn" class="btn btn-primary btn-sm">Add Admin</button>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h3>Data Management</h3>
+                    <div class="data-actions">
+                        <button id="sync-data-btn" class="btn btn-outline btn-sm">Sync Local Data to SharePoint</button>
+                        <button id="export-data-btn" class="btn btn-outline btn-sm">Export All Data</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Insert before the submissions section
+        const submissionsSection = document.getElementById('submissions-section');
+        if (submissionsSection) {
+            container.insertBefore(adminPanel, submissionsSection);
+        } else {
+            container.appendChild(adminPanel);
+        }
+
+        this.setupAdminPanelListeners();
+        this.loadAvailableLists();
+    }
+
+    setupAdminPanelListeners() {
+        // List selection change
+        const listSelect = document.getElementById('submission-list-select');
+        if (listSelect) {
+            listSelect.addEventListener('change', (e) => {
+                const selectedList = e.target.value;
+                if (selectedList) {
+                    Storage.setSelectedSubmissionList(selectedList);
+                    if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                        window.UIManager.showToast('List Selected', `Now using "${selectedList}" for submissions.`, 'success');
+                    }
+                }
+            });
+        }
+
+        // Create new list
+        const createListBtn = document.getElementById('create-new-list-btn');
+        if (createListBtn) {
+            createListBtn.addEventListener('click', () => {
+                this.createNewSubmissionList();
+            });
+        }
+
+        // Add admin
+        const addAdminBtn = document.getElementById('add-admin-btn');
+        if (addAdminBtn) {
+            addAdminBtn.addEventListener('click', () => {
+                this.addNewAdmin();
+            });
+        }
+
+        // Sync data
+        const syncDataBtn = document.getElementById('sync-data-btn');
+        if (syncDataBtn) {
+            syncDataBtn.addEventListener('click', async () => {
+                try {
+                    const success = await Storage.syncToSharePoint();
+                    if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                        if (success) {
+                            window.UIManager.showToast('Sync Complete', 'Local data has been synced to SharePoint.', 'success');
+                        } else {
+                            window.UIManager.showToast('Sync Failed', 'Unable to sync data to SharePoint.', 'error');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Sync error:', error);
+                    if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                        window.UIManager.showToast('Sync Error', 'An error occurred during sync.', 'error');
+                    }
+                }
+            });
+        }
+
+        // Export data
+        const exportDataBtn = document.getElementById('export-data-btn');
+        if (exportDataBtn) {
+            exportDataBtn.addEventListener('click', () => {
+                this.exportAllData();
+            });
+        }
+    }
+
+    async loadAvailableLists() {
+        const listSelect = document.getElementById('submission-list-select');
+        if (!listSelect) return;
+
+        try {
+            const lists = await Storage.getAvailableSubmissionLists();
+            const currentSelection = Storage.getSelectedSubmissionList();
+
+            listSelect.innerHTML = `
+                <option value="AcknowledgmentSubmissions" ${currentSelection === 'AcknowledgmentSubmissions' ? 'selected' : ''}>
+                    AcknowledgmentSubmissions (Default)
+                </option>
+                ${lists.map(list => `
+                    <option value="${list.title}" ${currentSelection === list.title ? 'selected' : ''}>
+                        ${list.title}
+                    </option>
+                `).join('')}
+            `;
+        } catch (error) {
+            console.error('Error loading available lists:', error);
+            listSelect.innerHTML = '<option value="AcknowledgmentSubmissions">AcknowledgmentSubmissions (Default)</option>';
+        }
+    }
+
+    async createNewSubmissionList() {
+        const listName = prompt('Enter name for the new submission list:');
+        if (!listName || !listName.trim()) return;
+
+        try {
+            if (window.SharePointService && window.SharePointService.isInitialized()) {
+                await window.SharePointService.createSubmissionList(listName.trim());
+                await this.loadAvailableLists();
+                Storage.setSelectedSubmissionList(listName.trim());
+                
+                if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                    window.UIManager.showToast('List Created', `"${listName}" has been created and selected.`, 'success');
+                }
+            } else {
+                if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                    window.UIManager.showToast('SharePoint Error', 'SharePoint service not available.', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error creating list:', error);
+            if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                window.UIManager.showToast('Creation Failed', 'Failed to create new list.', 'error');
+            }
+        }
+    }
+
+    async addNewAdmin() {
+        const emailInput = document.getElementById('admin-email-input');
+        if (!emailInput) return;
+
+        const email = emailInput.value.trim();
+        if (!email) {
+            if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                window.UIManager.showToast('Email Required', 'Please enter a valid email address.', 'error');
+            }
+            return;
+        }
+
+        try {
+            if (window.SharePointService && window.SharePointService.isInitialized()) {
+                await window.SharePointService.addAdmin(email, email.split('@')[0]);
+                emailInput.value = '';
+                
+                if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                    window.UIManager.showToast('Admin Added', `${email} has been added as an admin.`, 'success');
+                }
+            } else {
+                if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                    window.UIManager.showToast('SharePoint Error', 'SharePoint service not available.', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error adding admin:', error);
+            if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                window.UIManager.showToast('Add Admin Failed', 'Failed to add admin user.', 'error');
+            }
         }
     }
 
