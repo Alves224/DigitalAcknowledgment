@@ -10,11 +10,20 @@ class FormsManager {
     }
 
     setupEventListeners() {
-        // Add Type button
+        // Add Type button - only for admins
         const addTypeBtn = document.getElementById('add-type-btn');
         if (addTypeBtn) {
+            // Check admin status and hide/show button accordingly
+            this.updateAddTypeButtonVisibility();
+            
             addTypeBtn.addEventListener('click', () => {
-                this.openAddTypeModal();
+                if (Storage.isCurrentUserAdmin()) {
+                    this.openAddTypeModal();
+                } else {
+                    if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                        window.UIManager.showToast('Access Denied', 'Only administrators can add new acknowledgment types.', 'error');
+                    }
+                }
             });
         }
 
@@ -46,7 +55,22 @@ class FormsManager {
         });
     }
 
+    updateAddTypeButtonVisibility() {
+        const addTypeBtn = document.getElementById('add-type-btn');
+        if (addTypeBtn) {
+            const isAdmin = Storage.isCurrentUserAdmin();
+            addTypeBtn.style.display = isAdmin ? 'flex' : 'none';
+        }
+    }
+
     openAddTypeModal() {
+        if (!Storage.isCurrentUserAdmin()) {
+            if (window.UIManager && typeof window.UIManager.showToast === 'function') {
+                window.UIManager.showToast('Access Denied', 'Only administrators can add new acknowledgment types.', 'error');
+            }
+            return;
+        }
+        
         this.resetAddTypeForm();
         if (window.UIManager && typeof window.UIManager.openModal === 'function') {
             window.UIManager.openModal('add-type-modal');

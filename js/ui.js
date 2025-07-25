@@ -60,15 +60,19 @@ class UIManager {
         }
 
         const types = window.AcknowledgmentData.getAcknowledgmentTypes();
+        const isAdmin = Storage.isCurrentUserAdmin();
 
         grid.innerHTML = types.map(type => {
             const isCustom = type.id.startsWith('custom-');
             const iconSVG = window.AcknowledgmentData.getIconSVG(type.icon);
+            
+            // Only show delete button if user is admin AND it's a custom type
+            const showDeleteBtn = isAdmin && isCustom;
 
             return `
                 <div class="card acknowledgment-card" data-type-id="${type.id}">
                     <div class="card-header">
-                        ${isCustom ? `
+                        ${showDeleteBtn ? `
                             <button class="delete-btn" data-type-id="${type.id}" title="Delete acknowledgment type">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="3,6 5,6 21,6"></polyline>
@@ -99,14 +103,16 @@ class UIManager {
             });
         });
 
-        // Add event listeners to delete buttons
-        grid.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const typeId = btn.getAttribute('data-type-id');
-                this.deleteAcknowledgmentType(typeId);
+        // Add event listeners to delete buttons (only if admin)
+        if (isAdmin) {
+            grid.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const typeId = btn.getAttribute('data-type-id');
+                    this.deleteAcknowledgmentType(typeId);
+                });
             });
-        });
+        }
     }
 
     openAcknowledgmentModal(typeId) {
@@ -114,9 +120,13 @@ class UIManager {
         if (!type) return;
 
         this.currentSelectedType = typeId;
+        
+        // Auto-fill employee name from SharePoint user or use stored value
+        const employeeName = Storage.getCurrentUserName();
+        
         this.currentFormData = {
             requestNo: window.AcknowledgmentData.generateRequestNumber(),
-            employeeName: '',
+            employeeName: employeeName,
             acknowledged: false
         };
 
@@ -258,7 +268,7 @@ class UIManager {
         }
     }
 
-    submitAcknowledgment() {
+    async submitAcknowledgment() {
         if (!this.currentFormData.acknowledged) {
             this.showToast('Acknowledgment Required', 'Please check the acknowledgment box to continue.', 'error');
             return;
@@ -279,10 +289,15 @@ class UIManager {
             acknowledged: this.currentFormData.acknowledged
         };
 
-        Storage.addSubmission(submission);
-        this.closeModal('acknowledgment-modal');
-        this.updateSubmissionsSection();
-        this.showToast('Acknowledgment Submitted', 'Your acknowledgment has been successfully recorded.', 'success');
+        try {
+            await Storage.addSubmission(submission);
+            this.closeModal('acknowledgment-modal');
+            await this.updateSubmissionsSection();
+            this.showToast('Acknowledgment Submitted', 'Your acknowledgment has been successfully recorded.', 'success');
+        } catch (error) {
+            console.error('Error submitting acknowledgment:', error);
+            this.showToast('Submission Error', 'There was an error submitting your acknowledgment. Please try again.', 'error');
+        }
     }
 
     deleteAcknowledgmentType(typeId) {
@@ -293,10 +308,10 @@ class UIManager {
         }
     }
 
-    updateSubmissionsSection() {
+    async updateSubmissionsSection() {
         const submissionsSection = document.getElementById('submissions-section');
         const submissionsList = document.getElementById('submissions-list');
-        const submissions = Storage.getSubmissions();
+        const submissions = await Storage.getSubmissions();
 
         if (submissions.length === 0) {
             submissionsSection.style.display = 'none';
@@ -307,14 +322,14 @@ class UIManager {
         this.renderSubmissions(submissions);
     }
 
-    renderSubmissions(submissions = null) {
+    async renderSubmissions(submissions = null) {
         const submissionsList = document.getElementById('submissions-list');
         if (!submissionsList) return;
 
         const searchInput = document.getElementById('search-input');
         const searchTerm = searchInput ? searchInput.value : '';
 
-        const filteredSubmissions = submissions || Storage.searchSubmissions(searchTerm);
+        const filteredSubmissions = submissions || await Storage.searchSubmissions(searchTerm);
 
         if (filteredSubmissions.length === 0) {
             submissionsList.innerHTML = `
@@ -359,12 +374,12 @@ class UIManager {
         });
     }
 
-    handleSearch(searchTerm) {
-        this.renderSubmissions();
+    async handleSearch(searchTerm) {
+        await this.renderSubmissions();
     }
 
-    openSubmissionModal(submissionId) {
-        const submissions = Storage.getSubmissions();
+    async openSubmissionModal(submissionId) {
+        const submissions = await Storage.getSubmissions();
         const submission = submissions.find(s => s.id === submissionId);
         if (!submission) return;
 
