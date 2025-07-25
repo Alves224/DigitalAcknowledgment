@@ -1,0 +1,149 @@
+{
+  "summary": {
+    "total": 23,
+    "passed": 23,
+    "failed": 0,
+    "successRate": 100
+  },
+  "results": [
+    {
+      "name": "File exists: index.html",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.045Z"
+    },
+    {
+      "name": "File exists: test.html",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "File exists: js/sharepoint-mock.js",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "File exists: js/sharepoint-service.js",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "File exists: js/storage.js",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "File exists: js/data.js",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "File exists: js/ui.js",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "File exists: js/forms.js",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "File exists: js/main.js",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "File exists: css/styles.css",
+      "passed": true,
+      "details": "Required file found",
+      "timestamp": "2025-07-25T14:38:07.046Z"
+    },
+    {
+      "name": "js/sharepoint-mock.js: SharePointMockService class defined",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-mock.js: getCurrentUser method exists",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-mock.js: isUserAdmin method exists",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-mock.js: getListItems method exists",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-mock.js: addListItem method exists",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-mock.js: createList method exists",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-service.js: SharePointService class defined",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-service.js: Environment detection method exists",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-service.js: SharePoint REST API calls implemented",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "js/sharepoint-service.js: SharePoint authentication headers included",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "test.html: Test page title correct",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "test.html: Test controls present",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    },
+    {
+      "name": "test.html: Test framework class defined",
+      "passed": true,
+      "details": "Pattern found",
+      "timestamp": "2025-07-25T14:38:07.047Z"
+    }
+  ],
+  "timestamp": "2025-07-25T14:38:07.047Z"
+}
